@@ -37,6 +37,8 @@ pub mod invite;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod projectile;
 #[cfg(not(target_arch = "wasm32"))]
+mod remote_controller;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod shockwave;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod skills;
@@ -93,6 +95,7 @@ pub use self::{
     player::Player,
     poise::{Poise, PoiseState},
     projectile::{Projectile, ProjectileConstructor},
+    remote_controller::{CommandGenerator, ControlCommands, RemoteController},
     shockwave::{Shockwave, ShockwaveHitEntities},
     skills::{Skill, SkillGroup, SkillGroupKind, SkillSet},
     stats::{Stats, StatsModifier},

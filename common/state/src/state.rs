@@ -153,7 +153,7 @@ impl State {
         ecs.register::<comp::BeamSegment>();
 
         // Register components send from clients -> server
-        ecs.register::<comp::Controller>();
+        ecs.register::<comp::RemoteController>();
 
         // Register components send directly from server -> all but one client
         ecs.register::<comp::PhysicsState>();
@@ -170,6 +170,7 @@ impl State {
 
         // Register client-local components
         // TODO: only register on the client
+        ecs.register::<comp::Controller>();
         ecs.register::<comp::LightAnimation>();
         ecs.register::<sync_interp::InterpBuffer<comp::Pos>>();
         ecs.register::<sync_interp::InterpBuffer<comp::Vel>>();

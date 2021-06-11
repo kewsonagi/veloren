@@ -13,7 +13,7 @@ use common::{
     trade::{PendingTrade, SitePrices, TradeId, TradeResult},
     uid::Uid,
 };
-use hashbrown::HashMap;
+use hashbrown::{HashMap, HashSet};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 use tracing::warn;
@@ -135,6 +135,7 @@ pub enum ServerGeneral {
     CharacterCreated(character::CharacterId),
     CharacterSuccess,
     //Ingame related
+    AckControl(HashSet<u64>),
     GroupUpdate(comp::group::ChangeNotification<sync::Uid>),
     /// Indicate to the client that they are invited to join a group
     Invite {
@@ -283,6 +284,7 @@ impl ServerMsg {
                         },
                         //Ingame related
                         ServerGeneral::GroupUpdate(_)
+                        | ServerGeneral::AckControl(_)
                         | ServerGeneral::Invite { .. }
                         | ServerGeneral::InvitePending(_)
                         | ServerGeneral::InviteComplete { .. }
