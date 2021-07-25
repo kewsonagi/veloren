@@ -112,6 +112,7 @@ pub enum Tactic {
     QuadMedJump,
     QuadMedBasic,
     Theropod,
+    Arthropod,
     Turret,
     FixedTurret,
     RotatingTurret,
@@ -1765,6 +1766,7 @@ impl<'a> AgentData<'a> {
                             "Quad Low Quick" => Tactic::QuadLowQuick,
                             "Quad Low Basic" => Tactic::QuadLowBasic,
                             "Theropod Basic" | "Theropod Bird" => Tactic::Theropod,
+                            "Arthropod Basic" => Tactic::Arthropod,
                             "Theropod Charge" => Tactic::CircleCharge {
                                 radius: 6,
                                 circle_time: 1,
@@ -2034,6 +2036,9 @@ impl<'a> AgentData<'a> {
             ),
             Tactic::Theropod => {
                 self.handle_theropod_attack(agent, controller, &attack_data, tgt_data, read_data)
+            },
+            Tactic::Arthropod => {
+                self.handle_arthropod_attack(agent, controller, &attack_data, tgt_data, read_data)
             },
             Tactic::Turret => {
                 self.handle_turret_attack(agent, controller, &attack_data, tgt_data, read_data)
@@ -3215,6 +3220,26 @@ impl<'a> AgentData<'a> {
     }
 
     fn handle_theropod_attack(
+        &self,
+        agent: &mut Agent,
+        controller: &mut Controller,
+        attack_data: &AttackData,
+        tgt_data: &TargetData,
+        read_data: &ReadData,
+    ) {
+        if attack_data.angle < 90.0 && attack_data.in_min_range() {
+            controller.inputs.move_dir = Vec2::zero();
+            controller
+                .actions
+                .push(ControlAction::basic_input(InputKind::Primary));
+        } else if attack_data.dist_sqrd < MAX_PATH_DIST.powi(2) {
+            self.path_toward_target(agent, controller, tgt_data, read_data, true, false, None);
+        } else {
+            self.path_toward_target(agent, controller, tgt_data, read_data, false, false, None);
+        }
+    }
+
+    fn handle_arthropod_attack(
         &self,
         agent: &mut Agent,
         controller: &mut Controller,
