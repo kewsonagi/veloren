@@ -4015,6 +4015,7 @@ pub fn get_buff_image(buff: BuffKind, imgs: &Imgs) -> conrod_core::image::Id {
         BuffKind::Frozen { .. } => imgs.debuff_frozen_0,
         BuffKind::Wet { .. } => imgs.debuff_wet_0,
         BuffKind::Ensnared { .. } => imgs.debuff_ensnared_0,
+        BuffKind::Poisoned { .. } => imgs.debuff_poisoned_0,
     }
 }
 
@@ -4038,6 +4039,7 @@ pub fn get_buff_title(buff: BuffKind, localized_strings: &Localization) -> &str 
         BuffKind::Frozen { .. } => localized_strings.get("buff.title.frozen"),
         BuffKind::Wet { .. } => localized_strings.get("buff.title.wet"),
         BuffKind::Ensnared { .. } => localized_strings.get("buff.title.ensnared"),
+        BuffKind::Poisoned { .. } => localized_strings.get("buff.title.poisoned"),
     }
 }
 
@@ -4073,6 +4075,7 @@ pub fn get_buff_desc(buff: BuffKind, data: BuffData, localized_strings: &Localiz
         BuffKind::Frozen { .. } => Cow::Borrowed(localized_strings.get("buff.desc.frozen")),
         BuffKind::Wet { .. } => Cow::Borrowed(localized_strings.get("buff.desc.wet")),
         BuffKind::Ensnared { .. } => Cow::Borrowed(localized_strings.get("buff.desc.ensnared")),
+        BuffKind::Poisoned { .. } => Cow::Borrowed(localized_strings.get("buff.desc.poisoned")),
     }
 }
 

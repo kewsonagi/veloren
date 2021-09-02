@@ -3247,11 +3247,23 @@ impl<'a> AgentData<'a> {
         tgt_data: &TargetData,
         read_data: &ReadData,
     ) {
-        if attack_data.angle < 90.0 && attack_data.in_min_range() {
+        if attack_data.angle < 70.0
+            && attack_data.dist_sqrd < (1.3 * attack_data.min_attack_dist).powi(2)
+        {
             controller.inputs.move_dir = Vec2::zero();
-            controller
-                .actions
-                .push(ControlAction::basic_input(InputKind::Primary));
+            if agent.action_state.timer > 5.0 {
+                agent.action_state.timer = 0.0;
+            } else if agent.action_state.timer > 2.0 {
+                controller
+                    .actions
+                    .push(ControlAction::basic_input(InputKind::Secondary));
+                agent.action_state.timer += read_data.dt.0;
+            } else {
+                controller
+                    .actions
+                    .push(ControlAction::basic_input(InputKind::Primary));
+                agent.action_state.timer += read_data.dt.0;
+            }
         } else if attack_data.dist_sqrd < MAX_PATH_DIST.powi(2) {
             self.path_toward_target(agent, controller, tgt_data, read_data, true, false, None);
         } else {
