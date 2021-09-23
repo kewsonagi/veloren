@@ -12,6 +12,11 @@ pub struct TimeOfDay(pub f64);
 #[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Time(pub f64);
 
+/// A resource that stores the delay between Server-Time and
+/// local-Time to adjust over time
+#[derive(Copy, Clone, Debug, Default, Serialize, Deserialize)]
+pub struct ServerTimeDelay(pub f64);
+
 /// A resource that stores the time since the previous tick.
 #[derive(Default)]
 pub struct DeltaTime(pub f32);

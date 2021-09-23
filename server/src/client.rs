@@ -99,6 +99,7 @@ impl Client {
                     },
                     //Ingame related
                     ServerGeneral::GroupUpdate(_)
+                    | ServerGeneral::TimeSync(_)
                     | ServerGeneral::AckControl(_)
                     | ServerGeneral::Invite { .. }
                     | ServerGeneral::InvitePending(_)
@@ -171,6 +172,7 @@ impl Client {
                     },
                     //Ingame related
                     ServerGeneral::GroupUpdate(_)
+                    | ServerGeneral::TimeSync(_)
                     | ServerGeneral::AckControl(_)
                     | ServerGeneral::Invite { .. }
                     | ServerGeneral::InvitePending(_)

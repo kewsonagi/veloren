@@ -8,7 +8,7 @@ use common::{
     comp::{self, invite::InviteKind, item::MaterialStatManifest},
     outcome::Outcome,
     recipe::RecipeBook,
-    resources::TimeOfDay,
+    resources::{TimeOfDay, Time},
     terrain::{Block, TerrainChunk, TerrainChunkMeta, TerrainChunkSize},
     trade::{PendingTrade, SitePrices, TradeId, TradeResult},
     uid::Uid,
@@ -135,6 +135,7 @@ pub enum ServerGeneral {
     CharacterCreated(character::CharacterId),
     CharacterSuccess,
     //Ingame related
+    TimeSync(Time),
     AckControl(HashSet<u64>),
     GroupUpdate(comp::group::ChangeNotification<sync::Uid>),
     /// Indicate to the client that they are invited to join a group
@@ -284,6 +285,7 @@ impl ServerMsg {
                         },
                         //Ingame related
                         ServerGeneral::GroupUpdate(_)
+                        | ServerGeneral::TimeSync(_)
                         | ServerGeneral::AckControl(_)
                         | ServerGeneral::Invite { .. }
                         | ServerGeneral::InvitePending(_)

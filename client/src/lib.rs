@@ -35,7 +35,7 @@ use common::{
     grid::Grid,
     outcome::Outcome,
     recipe::RecipeBook,
-    resources::{PlayerEntity, TimeOfDay},
+    resources::{PlayerEntity, TimeOfDay, Time},
     terrain::{
         block::Block, map::MapConfig, neighbors, BiomeKind, SitesKind, SpriteKind, TerrainChunk,
         TerrainChunkSize,
@@ -1784,6 +1784,9 @@ impl Client {
     ) -> Result<(), Error> {
         prof_span!("handle_server_in_game_msg");
         match msg {
+            ServerGeneral::TimeSync(time) => {
+                self.state.ecs().write_resource::<Time>().0 = time.0 + 0.5;
+            },
             ServerGeneral::AckControl(acked_ids) => {
                 if let Some(remote_controller) = self
                     .state
