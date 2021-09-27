@@ -35,7 +35,7 @@ use common::{
     grid::Grid,
     outcome::Outcome,
     recipe::RecipeBook,
-    resources::{PlayerEntity, Time, TimeOfDay},
+    resources::{PlayerEntity, ServerTime, Time, TimeOfDay},
     terrain::{
         block::Block, map::MapConfig, neighbors, BiomeKind, SitesKind, SpriteKind, TerrainChunk,
         TerrainChunkSize,
@@ -1785,15 +1785,14 @@ impl Client {
         prof_span!("handle_server_in_game_msg");
         match msg {
             ServerGeneral::TimeSync(time) => {
-                let latency = match self
+                self.state.ecs().write_resource::<ServerTime>().0 = time.0;
+                let latency = self
                     .state
                     .ecs()
                     .read_storage::<RemoteController>()
                     .get(self.entity())
-                {
-                    Some(remote_controller) => remote_controller.avg_latency(),
-                    None => Duration::default(),
-                };
+                    .map(|rc| rc.avg_latency())
+                    .unwrap_or_default();
                 self.state.ecs().write_resource::<Time>().0 = time.0 + latency.as_secs_f64();
             },
             ServerGeneral::AckControl(acked_ids, time) => {
