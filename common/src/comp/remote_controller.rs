@@ -177,6 +177,13 @@ impl RemoteController {
                 .break_block_pos
                 .or(e.msg.inputs.break_block_pos);
             result.inputs.strafing = result.inputs.strafing || e.msg.inputs.strafing;
+            // we apply events from all that are started here.
+            // if we only are part of 1 tick here we would assume that it was already covered before
+            if i != start_i || e.source_time >= start {
+                result.actions.append(&mut e.msg.actions.clone());
+                result.events.append(&mut e.msg.events.clone());
+                result.queued_inputs.append(&mut e.msg.queued_inputs.clone());
+            }
             last_start = local_start;
         }
         result.inputs.move_dir /= dt.as_secs_f32();
