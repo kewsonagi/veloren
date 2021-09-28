@@ -10,7 +10,7 @@ use common::{
     outcome::Outcome,
     region::RegionMap,
     resources::{
-        DeltaTime, EntitiesDiedLastTick, GameMode, PlayerEntity, PlayerPhysicsSettings, ServerTime,
+        DeltaTime, EntitiesDiedLastTick, GameMode, PlayerEntity, ServerTime,
         Time, TimeOfDay,
     },
     slowjob::SlowJobPool,
@@ -231,7 +231,6 @@ impl State {
         ecs.insert(SysMetrics::default());
         ecs.insert(PhysicsMetrics::default());
         ecs.insert(Trades::default());
-        ecs.insert(PlayerPhysicsSettings::default());
 
         // Load plugins from asset directory
         #[cfg(feature = "plugins")]

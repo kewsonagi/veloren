@@ -178,13 +178,30 @@ impl RemoteController {
                 .or(e.msg.inputs.break_block_pos);
             result.inputs.strafing = result.inputs.strafing || e.msg.inputs.strafing;
             // we apply events from all that are started here.
-            // if we only are part of 1 tick here we would assume that it was already covered before
+            // if we only are part of 1 tick here we would assume that it was already
+            // covered before
             if i != start_i || e.source_time >= start {
                 result.actions.append(&mut e.msg.actions.clone());
                 result.events.append(&mut e.msg.events.clone());
-                result.queued_inputs.append(&mut e.msg.queued_inputs.clone());
+                result
+                    .queued_inputs
+                    .append(&mut e.msg.queued_inputs.clone());
             }
             last_start = local_start;
+        }
+        if result.actions.iter().any(|e| {
+            if let crate::comp::ControlAction::StartInput {
+                input,
+                target_entity,
+                select_pos,
+            } = e
+            {
+                input == &crate::comp::InputKind::Jump
+            } else {
+                false
+            }
+        }) {
+            tracing::error!("jump detencted");
         }
         result.inputs.move_dir /= dt.as_secs_f32();
         result.inputs.move_z /= dt.as_secs_f32();

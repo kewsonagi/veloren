@@ -34,7 +34,7 @@ use common::{
     event::{EventBus, ServerEvent},
     generation::EntityInfo,
     npc::{self, get_npc_name},
-    resources::{BattleMode, PlayerPhysicsSettings, Time, TimeOfDay},
+    resources::{BattleMode, Time, TimeOfDay},
     terrain::{Block, BlockKind, SpriteKind, TerrainChunkSize},
     uid::Uid,
     vol::RectVolSize,
@@ -160,7 +160,6 @@ fn do_command(
         ChatCommand::RevokeBuildAll => handle_revoke_build_all,
         ChatCommand::Safezone => handle_safezone,
         ChatCommand::Say => handle_say,
-        ChatCommand::ServerPhysics => handle_server_physics,
         ChatCommand::SetMotd => handle_set_motd,
         ChatCommand::Site => handle_site,
         ChatCommand::SkillPoint => handle_skill_point,
@@ -3301,38 +3300,6 @@ fn handle_unban(
         edit_setting_feedback(server, client, edit, || {
             format!("{} was already unbanned", username)
         })
-    } else {
-        Err(action.help_string())
-    }
-}
-
-fn handle_server_physics(
-    server: &mut Server,
-    client: EcsEntity,
-    _target: EcsEntity,
-    args: Vec<String>,
-    action: &ChatCommand,
-) -> CmdResult<()> {
-    if let (Some(username), enabled_opt) = parse_args!(args, String, bool) {
-        let uuid = find_username(server, &username)?;
-        let server_force = enabled_opt.unwrap_or(true);
-
-        let mut player_physics_settings =
-            server.state.ecs().write_resource::<PlayerPhysicsSettings>();
-        let entry = player_physics_settings.settings.entry(uuid).or_default();
-        entry.server_force = server_force;
-
-        server.notify_client(
-            client,
-            ServerGeneral::server_msg(
-                ChatType::CommandInfo,
-                format!(
-                    "Updated physics settings for {} ({}): {:?}",
-                    username, uuid, entry
-                ),
-            ),
-        );
-        Ok(())
     } else {
         Err(action.help_string())
     }

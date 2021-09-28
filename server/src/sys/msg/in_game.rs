@@ -6,7 +6,7 @@ use common::{
         Admin, CanBuild, ForceUpdate, Health, Ori, Player, Pos, RemoteController, SkillSet, Vel,
     },
     event::{EventBus, ServerEvent},
-    resources::{PlayerPhysicsSettings, Time},
+    resources::{Time},
     terrain::TerrainGrid,
     vol::ReadVol,
 };
@@ -43,7 +43,6 @@ impl Sys {
         remote_controllers: &mut WriteStorage<'_, RemoteController>,
         settings: &Read<'_, Settings>,
         build_areas: &Read<'_, BuildAreas>,
-        player_physics_settings: &mut Write<'_, PlayerPhysicsSettings>,
         _terrain_persistence: &mut TerrainPersistenceData<'_>,
         maybe_player: &Option<&Player>,
         maybe_admin: &Option<&Admin>,
@@ -101,92 +100,6 @@ impl Sys {
                             }
                         }
                              */
-                    }
-                }
-            },
-            ClientGeneral::PlayerPhysics { pos, vel, ori } => {
-                let player_physics_setting = maybe_player.map(|p| {
-                    player_physics_settings
-                        .settings
-                        .entry(p.uuid())
-                        .or_default()
-                });
-
-                if matches!(presence.kind, PresenceKind::Character(_))
-                    && force_updates.get(entity).is_none()
-                    && healths.get(entity).map_or(true, |h| !h.is_dead)
-                    && player_physics_setting
-                        .as_ref()
-                        .map_or(true, |s| s.client_authoritative())
-                {
-                    enum Rejection {
-                        TooFar { old: Vec3<f32>, new: Vec3<f32> },
-                        TooFast { vel: Vec3<f32> },
-                    }
-
-                    let rejection = if maybe_admin.is_some() {
-                        None
-                    } else if let Some(mut setting) = player_physics_setting {
-                        // If we detect any thresholds being exceeded, force server-authoritative
-                        // physics for that player. This doesn't detect subtle hacks, but it
-                        // prevents blatant ones and forces people to not debug physics hacks on the
-                        // live server (and also mitigates some floating-point overflow crashes)
-                        let rejection = None
-                            // Check position
-                            .or_else(|| {
-                                if let Some(prev_pos) = positions.get(entity) {
-                                    if prev_pos.0.distance_squared(pos.0) > (500.0f32).powf(2.0) {
-                                        Some(Rejection::TooFar { old: prev_pos.0, new: pos.0 })
-                                    } else {
-                                        None
-                                    }
-                                } else {
-                                    None
-                                }
-                            })
-                            // Check velocity
-                            .or_else(|| {
-                                if vel.0.magnitude_squared() > (500.0f32).powf(2.0) {
-                                    Some(Rejection::TooFast { vel: vel.0 })
-                                } else {
-                                    None
-                                }
-                            });
-
-                        // Force a client-side physics update if rejectable physics data is
-                        // received.
-                        if rejection.is_some() {
-                            // We skip this for `TooFar` because false positives can occur when
-                            // using server-side teleportation commands
-                            // that the client doesn't know about (leading to the client sending
-                            // physics state that disagree with the server). In the future,
-                            // client-authoritative physics will be gone
-                            // and this will no longer be necessary.
-                            setting.server_force =
-                                !matches!(rejection, Some(Rejection::TooFar { .. })); // true;
-                        }
-
-                        rejection
-                    } else {
-                        None
-                    };
-
-                    match rejection {
-                        Some(Rejection::TooFar { old, new }) => warn!(
-                            "Rejected player physics update (new position {:?} is too far from \
-                             old position {:?})",
-                            new, old
-                        ),
-                        Some(Rejection::TooFast { vel }) => warn!(
-                            "Rejected player physics update (new velocity {:?} is too fast)",
-                            vel
-                        ),
-                        None => {
-                            // Don't insert unless the component already exists
-                            let _ = positions.get_mut(entity).map(|p| *p = pos);
-                            let _ = velocities.get_mut(entity).map(|v| *v = vel);
-                            let _ = orientations.get_mut(entity).map(|o| *o = ori);
-                        },
                     }
                 }
             },
@@ -259,19 +172,6 @@ impl Sys {
             ClientGeneral::RequestSiteInfo(id) => {
                 server_emitter.emit(ServerEvent::RequestSiteInfo { entity, id });
             },
-            ClientGeneral::RequestPlayerPhysics {
-                server_authoritative,
-            } => {
-                let player_physics_setting = maybe_player.map(|p| {
-                    player_physics_settings
-                        .settings
-                        .entry(p.uuid())
-                        .or_default()
-                });
-                if let Some(setting) = player_physics_setting {
-                    setting.client_optin = server_authoritative;
-                }
-            },
             ClientGeneral::RequestLossyTerrainCompression {
                 lossy_terrain_compression,
             } => {
@@ -306,7 +206,6 @@ impl<'a> System<'a> for Sys {
         WriteStorage<'a, RemoteController>,
         Read<'a, Settings>,
         Read<'a, BuildAreas>,
-        Write<'a, PlayerPhysicsSettings>,
         TerrainPersistenceData<'a>,
         ReadStorage<'a, Player>,
         ReadStorage<'a, Admin>,
@@ -336,7 +235,6 @@ impl<'a> System<'a> for Sys {
             mut remote_controllers,
             settings,
             build_areas,
-            mut player_physics_settings,
             mut terrain_persistence,
             players,
             admins,
@@ -372,7 +270,6 @@ impl<'a> System<'a> for Sys {
                     &mut remote_controllers,
                     &settings,
                     &build_areas,
-                    &mut player_physics_settings,
                     &mut terrain_persistence,
                     &player,
                     &maybe_admin,

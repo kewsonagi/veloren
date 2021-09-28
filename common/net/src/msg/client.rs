@@ -64,11 +64,6 @@ pub enum ClientGeneral {
     BreakBlock(Vec3<i32>),
     PlaceBlock(Vec3<i32>, Block),
     ExitInGame,
-    PlayerPhysics {
-        pos: comp::Pos,
-        vel: comp::Vel,
-        ori: comp::Ori,
-    },
     UnlockSkill(Skill),
     RefundSkill(Skill),
     UnlockSkillGroup(SkillGroupKind),
@@ -81,9 +76,6 @@ pub enum ClientGeneral {
     ChatMsg(String),
     Command(String, Vec<String>),
     Terminate,
-    RequestPlayerPhysics {
-        server_authoritative: bool,
-    },
     RequestLossyTerrainCompression {
         lossy_terrain_compression: bool,
     },
@@ -116,13 +108,11 @@ impl ClientMsg {
                         | ClientGeneral::BreakBlock(_)
                         | ClientGeneral::PlaceBlock(_, _)
                         | ClientGeneral::ExitInGame
-                        | ClientGeneral::PlayerPhysics { .. }
                         | ClientGeneral::TerrainChunkRequest { .. }
                         | ClientGeneral::UnlockSkill(_)
                         | ClientGeneral::RefundSkill(_)
                         | ClientGeneral::RequestSiteInfo(_)
                         | ClientGeneral::UnlockSkillGroup(_)
-                        | ClientGeneral::RequestPlayerPhysics { .. }
                         | ClientGeneral::RequestLossyTerrainCompression { .. } => {
                             c_type == ClientType::Game && presence.is_some()
                         },
