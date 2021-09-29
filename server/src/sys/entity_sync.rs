@@ -8,7 +8,7 @@ use common::{
     comp::{Collider, ForceUpdate, Inventory, InventoryUpdate, Last, Ori, Player, Pos, Vel},
     outcome::Outcome,
     region::{Event as RegionEvent, RegionMap},
-    resources::{TimeOfDay},
+    resources::TimeOfDay,
     terrain::TerrainChunkSize,
     uid::Uid,
     vol::RectVolSize,

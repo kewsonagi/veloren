@@ -192,8 +192,8 @@ impl RemoteController {
         if result.actions.iter().any(|e| {
             if let crate::comp::ControlAction::StartInput {
                 input,
-                target_entity,
-                select_pos,
+                target_entity: _,
+                select_pos: _,
             } = e
             {
                 input == &crate::comp::InputKind::Jump

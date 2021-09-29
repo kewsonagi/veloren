@@ -10,8 +10,7 @@ use common::{
     outcome::Outcome,
     region::RegionMap,
     resources::{
-        DeltaTime, EntitiesDiedLastTick, GameMode, PlayerEntity, ServerTime,
-        Time, TimeOfDay,
+        DeltaTime, EntitiesDiedLastTick, GameMode, PlayerEntity, ServerTime, Time, TimeOfDay,
     },
     slowjob::SlowJobPool,
     terrain::{Block, TerrainChunk, TerrainGrid},
