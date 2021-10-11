@@ -3261,19 +3261,15 @@ impl<'a> AgentData<'a> {
         read_data: &ReadData,
     ) {
         agent.action_state.timer += read_data.dt.0;
-        dbg!(agent.action_state.timer);
-        if agent.action_state.timer > 6.0
+        if agent.action_state.timer > 12.0
             && attack_data.dist_sqrd < (1.5 * attack_data.min_attack_dist).powi(2)
         {
             controller.inputs.move_dir = Vec2::zero();
             controller
                 .actions
                 .push(ControlAction::basic_input(InputKind::Secondary));
-            if matches!(self.char_state, CharacterState::SpriteSummon(c) if matches!(c.stage_section, StageSection::Recover))
-            {
                 // Reset timer
                 agent.action_state.timer = 0.0;
-            }
         } else if attack_data.angle < 90.0
             && attack_data.dist_sqrd < (1.5 * attack_data.min_attack_dist).powi(2)
         {
@@ -3281,7 +3277,7 @@ impl<'a> AgentData<'a> {
             controller
                 .actions
                 .push(ControlAction::basic_input(InputKind::Primary));
-        } else if attack_data.angle < 15.0
+        } else if thread_rng().gen_bool(0.01) && attack_data.angle < 15.0
             && attack_data.dist_sqrd < (6.0 * attack_data.min_attack_dist).powi(2)
         {
             controller
@@ -3301,18 +3297,18 @@ impl<'a> AgentData<'a> {
         read_data: &ReadData,
     ) {
         agent.action_state.timer += read_data.dt.0;
-        dbg!(agent.action_state.timer);
-        if agent.action_state.timer > 6.0
-            && attack_data.dist_sqrd < (1.5 * attack_data.min_attack_dist).powi(2)
+        if matches!(self.char_state, CharacterState::DashMelee(c) if !matches!(c.stage_section, StageSection::Recover))
         {
-            controller.inputs.move_dir = Vec2::zero();
+            // If already charging, keep charging if not in recover
             controller
                 .actions
                 .push(ControlAction::basic_input(InputKind::Secondary));
-            if matches!(self.char_state, CharacterState::SpriteSummon(c) if matches!(c.stage_section, StageSection::Recover))
-            {
-                // Reset timer
-                agent.action_state.timer = 0.0;
+        } else if attack_data.dist_sqrd > (5.0 * attack_data.min_attack_dist).powi(2) {
+            // Charges at target if they are far enough away
+            if attack_data.angle < 60.0 {
+                controller
+                    .actions
+                    .push(ControlAction::basic_input(InputKind::Secondary));
             }
         } else if attack_data.angle < 90.0
             && attack_data.dist_sqrd < (1.5 * attack_data.min_attack_dist).powi(2)
@@ -3321,12 +3317,6 @@ impl<'a> AgentData<'a> {
             controller
                 .actions
                 .push(ControlAction::basic_input(InputKind::Primary));
-        } else if attack_data.angle < 15.0
-            && attack_data.dist_sqrd < (6.0 * attack_data.min_attack_dist).powi(2)
-        {
-            controller
-                .actions
-                .push(ControlAction::basic_input(InputKind::Ability(0)));
         } else {
             self.path_toward_target(agent, controller, tgt_data, read_data, false, false, None);
         }
