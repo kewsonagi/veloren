@@ -656,7 +656,20 @@ impl Body {
                 quadruped_low::Species::Deadwood => 120,
                 _ => 70,
             },
-            Body::Arthropod(_) => 10000,
+            Body::Arthropod(arthropod) => match arthropod.species {
+                arthropod::Species::Tarantula => 120,
+                arthropod::Species::Blackwidow => 120,
+                arthropod::Species::Antlion => 80,
+                arthropod::Species::Hornbeetle => 90,
+                arthropod::Species::Leafbeetle => 90,
+                arthropod::Species::Stagbeetle => 90,
+                arthropod::Species::Weevil => 80,
+                arthropod::Species::Cavespider => 60,
+                arthropod::Species::Moltencrawler => 80,
+                arthropod::Species::Mosscrawler => 80,
+                arthropod::Species::Sandcrawler => 80,
+                _ => 70,
+            },
             Body::Ship(_) => 1000,
         }
     }
@@ -760,7 +773,20 @@ impl Body {
                 quadruped_low::Species::Deadwood => 3,
                 _ => 2,
             },
-            Body::Arthropod(_) => 5,
+            Body::Arthropod(arthropod) => match arthropod.species {
+                arthropod::Species::Tarantula => 3,
+                arthropod::Species::Blackwidow => 3,
+                arthropod::Species::Antlion => 1,
+                arthropod::Species::Hornbeetle => 2,
+                arthropod::Species::Leafbeetle => 2,
+                arthropod::Species::Stagbeetle => 2,
+                arthropod::Species::Weevil => 2,
+                arthropod::Species::Cavespider => 1,
+                arthropod::Species::Moltencrawler => 2,
+                arthropod::Species::Mosscrawler => 2,
+                arthropod::Species::Sandcrawler => 2,
+                _ => 70,
+            },
             Body::Ship(_) => 50,
         }
     }
@@ -789,6 +815,7 @@ impl Body {
                         | bird_large::Species::Cockatrice
                         | bird_large::Species::FlameWyvern
                 ),
+                Body::Arthropod(b) => matches!(b.species, arthropod::Species::Moltencrawler),
                 _ => false,
             },
             BuffKind::Ensnared => match self {

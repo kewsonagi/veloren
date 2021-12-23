@@ -96,9 +96,7 @@ impl Skeleton for ArthropodSkeleton {
 
         // TODO: mount points
         //use comp::arthropod::Species::*;
-        let (mount_bone_mat, mount_bone_ori) = match (body.species, body.body_type) {
-            _ => (chest_mat, self.chest.orientation),
-        };
+        let (mount_bone_mat, mount_bone_ori) = (chest_mat, self.chest.orientation);
         // Offset from the mounted bone's origin.
         // Note: This could be its own bone if we need to animate it independently.
         let mount_position = (mount_bone_mat * Vec4::from_point(mount_point(&body)))
@@ -313,11 +311,8 @@ impl<'a> From<&'a Body> for SkeletonAttr {
     }
 }
 
-fn mount_point(body: &Body) -> Vec3<f32> {
+fn mount_point(_body: &Body) -> Vec3<f32> {
     // TODO: mount points
     //use comp::arthropod::{BodyType::*, Species::*};
-    match (body.species, body.body_type) {
-        (_, _) => (0.0, -6.0, 6.0),
-    }
-    .into()
+    (0.0, -6.0, 6.0).into()
 }

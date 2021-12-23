@@ -46,7 +46,6 @@ impl Animation for LeapMeleeAnimation {
         //let twitch3 = (movement3base * 5.0).sin() * mirror;
         //let twitch1abs = twitch1 * mirror;
         let shortalt = (global_time * 80.0).sin() * movement2base * early_pullback;
-        dbg!(anim_time);
 
         next.chest.scale = Vec3::one() / s_a.scaler;
 
@@ -107,27 +106,29 @@ impl Animation for LeapMeleeAnimation {
         next.leg_br.orientation = Quaternion::rotation_y(movement1abs * -0.2 + movement2abs * 1.0)
             * Quaternion::rotation_z(-s_a.leg_ori.3);
 
-            next.wing_fl.position = Vec3::new(-s_a.wing_f.0, s_a.wing_f.1, s_a.wing_f.2);
-            next.wing_fr.position = Vec3::new(s_a.wing_f.0, s_a.wing_f.1, s_a.wing_f.2);
-            next.wing_fl.orientation =
-                Quaternion::rotation_x(movement1abs * -0.4 + movement2abs * -0.2)
-                    * Quaternion::rotation_y(movement1abs * 0.5 + movement2abs * 0.1)
-                    * Quaternion::rotation_z(movement1abs * -0.2);
-            next.wing_fr.orientation =
-                Quaternion::rotation_x(movement1abs * -0.4 + movement2abs * -0.2)
-                    * Quaternion::rotation_y(movement1abs * -0.5 + movement2abs * -0.1)
-                    * Quaternion::rotation_z(movement1abs * 0.2);
+        next.wing_fl.position = Vec3::new(-s_a.wing_f.0, s_a.wing_f.1, s_a.wing_f.2);
+        next.wing_fr.position = Vec3::new(s_a.wing_f.0, s_a.wing_f.1, s_a.wing_f.2);
+        next.wing_fl.orientation =
+            Quaternion::rotation_x(movement1abs * -0.4 + movement2abs * -0.2)
+                * Quaternion::rotation_y(movement1abs * 0.5 + movement2abs * 0.1)
+                * Quaternion::rotation_z(movement1abs * -0.2);
+        next.wing_fr.orientation =
+            Quaternion::rotation_x(movement1abs * -0.4 + movement2abs * -0.2)
+                * Quaternion::rotation_y(movement1abs * -0.5 + movement2abs * -0.1)
+                * Quaternion::rotation_z(movement1abs * 0.2);
 
-            next.wing_bl.position = Vec3::new(-s_a.wing_b.0, s_a.wing_b.1, s_a.wing_b.2);
-            next.wing_br.position = Vec3::new(s_a.wing_b.0, s_a.wing_b.1, s_a.wing_b.2);
-            next.wing_bl.orientation =
-                Quaternion::rotation_x((movement1abs * -0.2 + movement2abs * -0.6) * early_pullback)
-                    * Quaternion::rotation_y(movement1abs * 0.4 + shortalt * 2.0 + movement2abs * 0.1)
-                    * Quaternion::rotation_z(movement1abs * -1.4);
-            next.wing_br.orientation =
-                Quaternion::rotation_x((movement1abs * -0.2 + movement2abs * -0.6) * early_pullback)
-                    * Quaternion::rotation_y(movement1abs * -0.4 + shortalt * 2.0 + movement2abs * -0.1)
-                    * Quaternion::rotation_z(movement1abs * 1.4);
+        next.wing_bl.position = Vec3::new(-s_a.wing_b.0, s_a.wing_b.1, s_a.wing_b.2);
+        next.wing_br.position = Vec3::new(s_a.wing_b.0, s_a.wing_b.1, s_a.wing_b.2);
+        next.wing_bl.orientation =
+            Quaternion::rotation_x((movement1abs * -0.2 + movement2abs * -0.6) * early_pullback)
+                * Quaternion::rotation_y(movement1abs * 0.4 + shortalt * 2.0 + movement2abs * 0.1)
+                * Quaternion::rotation_z(movement1abs * -1.4);
+        next.wing_br.orientation =
+            Quaternion::rotation_x((movement1abs * -0.2 + movement2abs * -0.6) * early_pullback)
+                * Quaternion::rotation_y(
+                    movement1abs * -0.4 + shortalt * 2.0 + movement2abs * -0.1,
+                )
+                * Quaternion::rotation_z(movement1abs * 1.4);
 
         next
     }

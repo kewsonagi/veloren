@@ -459,19 +459,21 @@ pub fn apply_caves_supplement<'a>(
                         let entity = EntityInfo::at(wpos2d.map(|e| e as f32).with_z(z as f32));
                         let entity = {
                             let asset = if cave_depth < 70.0 {
-                                match dynamic_rng.gen_range(0..4) {
+                                match dynamic_rng.gen_range(0..5) {
                                     0 => "common.entity.wild.peaceful.truffler",
                                     1 => "common.entity.wild.aggressive.dodarock",
                                     2 => "common.entity.wild.peaceful.holladon",
+                                    3 => "common.entity.wild.aggressive.cave_spider",
                                     _ => "common.entity.wild.aggressive.batfox",
                                 }
                             } else if cave_depth < 120.0 {
-                                match dynamic_rng.gen_range(0..6) {
+                                match dynamic_rng.gen_range(0..7) {
                                     0 => "common.entity.wild.aggressive.rocksnapper",
                                     1 => "common.entity.wild.aggressive.cave_salamander",
                                     2 => "common.entity.wild.aggressive.tarantula",
                                     3 => "common.entity.wild.aggressive.antlion",
                                     4 => "common.entity.wild.aggressive.black_widow",
+                                    5 => "common.entity.wild.peaceful.crawler_molten",
                                     _ => "common.entity.wild.aggressive.asp",
                                 }
                             } else if cave_depth < 190.0 {

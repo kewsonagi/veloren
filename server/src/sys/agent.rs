@@ -114,6 +114,8 @@ pub enum Tactic {
     Theropod,
     ArthropodBasic,
     ArthropodCharge,
+    ArthropodRanged,
+    ArthropodLeap,
     Turret,
     FixedTurret,
     RotatingTurret,
@@ -1769,6 +1771,8 @@ impl<'a> AgentData<'a> {
                             "Theropod Basic" | "Theropod Bird" => Tactic::Theropod,
                             "Arthropod Basic" => Tactic::ArthropodBasic,
                             "Arthropod Charge" => Tactic::ArthropodCharge,
+                            "Arthropod Ranged" => Tactic::ArthropodRanged,
+                            "Arthropod Leap" => Tactic::ArthropodLeap,
                             "Theropod Charge" => Tactic::CircleCharge {
                                 radius: 6,
                                 circle_time: 1,
@@ -2047,6 +2051,20 @@ impl<'a> AgentData<'a> {
                 read_data,
             ),
             Tactic::ArthropodCharge => self.handle_arthropod_charge_attack(
+                agent,
+                controller,
+                &attack_data,
+                tgt_data,
+                read_data,
+            ),
+            Tactic::ArthropodLeap => self.handle_arthropod_leap_attack(
+                agent,
+                controller,
+                &attack_data,
+                tgt_data,
+                read_data,
+            ),
+            Tactic::ArthropodRanged => self.handle_arthropod_ranged_attack(
                 agent,
                 controller,
                 &attack_data,
@@ -3261,6 +3279,128 @@ impl<'a> AgentData<'a> {
         read_data: &ReadData,
     ) {
         agent.action_state.timer += read_data.dt.0;
+        if agent.action_state.timer > 7.0
+            && attack_data.dist_sqrd < (2.0 * attack_data.min_attack_dist).powi(2)
+        {
+            controller.inputs.move_dir = Vec2::zero();
+            controller
+                .actions
+                .push(ControlAction::basic_input(InputKind::Secondary));
+            // Reset timer
+            if matches!(self.char_state, CharacterState::SpriteSummon(c) if matches!(c.stage_section, StageSection::Recover))
+            {
+                agent.action_state.timer = 0.0;
+            }
+        } else if attack_data.angle < 90.0
+            && attack_data.dist_sqrd < (1.5 * attack_data.min_attack_dist).powi(2)
+        {
+            controller.inputs.move_dir = Vec2::zero();
+            controller
+                .actions
+                .push(ControlAction::basic_input(InputKind::Primary));
+        } else {
+            self.path_toward_target(agent, controller, tgt_data, read_data, false, false, None);
+        }
+    }
+
+    fn handle_arthropod_ranged_attack(
+        &self,
+        agent: &mut Agent,
+        controller: &mut Controller,
+        attack_data: &AttackData,
+        tgt_data: &TargetData,
+        read_data: &ReadData,
+    ) {
+        dbg!(agent.action_state.timer);
+        agent.action_state.timer += read_data.dt.0;
+        if agent.action_state.timer > 6.0
+            && attack_data.dist_sqrd < (2.0 * attack_data.min_attack_dist).powi(2)
+        {
+            controller.inputs.move_dir = Vec2::zero();
+            controller
+                .actions
+                .push(ControlAction::basic_input(InputKind::Secondary));
+            // Reset timer
+            if matches!(self.char_state, CharacterState::SpriteSummon(c) if matches!(c.stage_section, StageSection::Recover))
+            {
+                agent.action_state.timer = 0.0;
+            }
+        } else if attack_data.dist_sqrd < (3.0 * attack_data.min_attack_dist).powi(2)
+            && attack_data.angle < 90.0
+        {
+            controller.inputs.move_dir = (tgt_data.pos.0 - self.pos.0)
+                .xy()
+                .try_normalized()
+                .unwrap_or_else(Vec2::unit_y);
+            controller
+                .actions
+                .push(ControlAction::basic_input(InputKind::Primary));
+        } else if attack_data.dist_sqrd < MAX_PATH_DIST.powi(2) {
+            if let Some((bearing, speed)) = agent.chaser.chase(
+                &*read_data.terrain,
+                self.pos.0,
+                self.vel.0,
+                tgt_data.pos.0,
+                TraversalConfig {
+                    min_tgt_dist: 1.25,
+                    ..self.traversal_config
+                },
+            ) {
+                if attack_data.angle < 15.0
+                    && can_see_tgt(
+                        &*read_data.terrain,
+                        self.pos,
+                        tgt_data.pos,
+                        attack_data.dist_sqrd,
+                    )
+                {
+                    if agent.action_state.timer > 5.0 {
+                        agent.action_state.timer = 0.0;
+                    } else if agent.action_state.timer > 2.5 {
+                        controller.inputs.move_dir = (tgt_data.pos.0 - self.pos.0)
+                            .xy()
+                            .rotated_z(1.75 * PI)
+                            .try_normalized()
+                            .unwrap_or_else(Vec2::zero)
+                            * speed;
+                        agent.action_state.timer += read_data.dt.0;
+                    } else {
+                        controller.inputs.move_dir = (tgt_data.pos.0 - self.pos.0)
+                            .xy()
+                            .rotated_z(0.25 * PI)
+                            .try_normalized()
+                            .unwrap_or_else(Vec2::zero)
+                            * speed;
+                        agent.action_state.timer += read_data.dt.0;
+                    }
+                    controller
+                        .actions
+                        .push(ControlAction::basic_input(InputKind::Ability(0)));
+                    self.jump_if(controller, bearing.z > 1.5);
+                    controller.inputs.move_z = bearing.z;
+                } else {
+                    controller.inputs.move_dir =
+                        bearing.xy().try_normalized().unwrap_or_else(Vec2::zero) * speed;
+                    self.jump_if(controller, bearing.z > 1.5);
+                    controller.inputs.move_z = bearing.z;
+                }
+            } else {
+                agent.target = None;
+            }
+        } else {
+            self.path_toward_target(agent, controller, tgt_data, read_data, false, false, None);
+        }
+    }
+
+    fn handle_arthropod_leap_attack(
+        &self,
+        agent: &mut Agent,
+        controller: &mut Controller,
+        attack_data: &AttackData,
+        tgt_data: &TargetData,
+        read_data: &ReadData,
+    ) {
+        agent.action_state.timer += read_data.dt.0;
         if agent.action_state.timer > 12.0
             && attack_data.dist_sqrd < (1.5 * attack_data.min_attack_dist).powi(2)
         {
@@ -3269,7 +3409,10 @@ impl<'a> AgentData<'a> {
                 .actions
                 .push(ControlAction::basic_input(InputKind::Secondary));
             // Reset timer
-            agent.action_state.timer = 0.0;
+            if matches!(self.char_state, CharacterState::SpriteSummon(c) if matches!(c.stage_section, StageSection::Recover))
+            {
+                agent.action_state.timer = 0.0;
+            }
         } else if attack_data.angle < 90.0
             && attack_data.dist_sqrd < (1.5 * attack_data.min_attack_dist).powi(2)
         {
